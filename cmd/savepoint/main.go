@@ -68,3 +68,14 @@ func fatalIf(err error){
 		os.Exit(1)
 	}
 }
+
+// stop/start a pid file under git
+
+func pidFile(repoRoot string) string {
+	gitDir, err := gitutil.GitDir(repoRoot)
+	if err != nil {
+		gitDir = filepath.Join(repoRoot, ".git")
+	}
+	return filepath.Join(gitDir, "git-savepoint.pid")
+}
+//83
