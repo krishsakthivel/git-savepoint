@@ -49,7 +49,7 @@ func main(){
 	}
 }
 
-// usage command
+// usage commands
 func usage(){
 	fmt.Print(`git-savepoint - a local-first time machine for your Git working tree
  
