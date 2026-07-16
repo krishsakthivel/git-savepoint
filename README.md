@@ -8,16 +8,16 @@ It doesn't touch your normal commits or `git log`. It just sits underneath,
 saving your progress.
 
 ## Install (one time)
-
-1. Open a terminal in the folder with `git-savepoint.exe`
-2. Run:
+(download latest version from releases)
+1. Double-click `git-savepoint-v1.0.1`
+2. Open a new terminal and run:
    ```
    git-savepoint install
    ```
-   (if that doesnt work, try ```./git-savepoint install```)
+
 3. Close and reopen your terminal
 
-Done. `git-savepoint` now works from any folder, no typing the full path.
+Done. 
 
 ## Use it
 
@@ -67,3 +67,16 @@ always undo an undo.
 Nothing you've already saved is affected. Your save points live inside the
 repo itself, not in the exe. You'd just need to reinstall to keep making new
 ones.
+
+## Uninstall/Updates
+
+**Uninstallation**
+Uninstalling is simple and easy. Run this command:
+```
+git-savepoint uninstall
+```
+
+Follow the instructions after running that command. git-savepoint should already be uninstalled from PATH when run.
+
+**Updating**
+Currently, the only way to update is by downloading the latest file from releases and running it. Everything should auto-update on its own. 

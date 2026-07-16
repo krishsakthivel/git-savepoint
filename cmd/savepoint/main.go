@@ -12,6 +12,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -35,6 +36,9 @@ func main() {
 	switch os.Args[1] {
 	case "install":
 		fatalIf(installToPath())
+		return
+	case "uninstall":
+		cmdUninstall()
 		return
 	case "-h", "--help", "help":
 		usage()
@@ -69,6 +73,7 @@ func usage() {
 
 Usage:
   git-savepoint install            copy itself onto your PATH, so "git-savepoint" just works anywhere
+  git-savepoint uninstall          remove itself from your PATH
   git-savepoint start [--daemon]   watch the repo and checkpoint automatically
   git-savepoint status             show whether the watcher is running and recent activity
   git-savepoint timeline           list checkpoints, newest last
@@ -77,6 +82,8 @@ Usage:
 
 Running git-savepoint with no arguments (e.g. double-clicking the .exe)
 starts watching the current folder, and running it again stops it.
+
+⭐ if this helps you, feel free to star our repo at https://github.com/krishsakthivel/git-savepoint/ ⭐
 `)
 }
 
@@ -87,6 +94,22 @@ starts watching the current folder, and running it again stops it.
 func cmdQuickToggle() {
 	cwd, err := os.Getwd()
 	fatalIf(err)
+
+	// first run (double click, no path yet) -> quietly set itself up so
+	// it works from any terminal / any future double click, even if this
+	// exact exe file gets moved or deleted later
+	if !alreadyInstalled() {
+		fmt.Println("first time running git-savepoint.")
+		fmt.Println("heads up: this will copy itself to a permanent folder and")
+		fmt.Println("add that folder to your PATH (a one time change), so")
+		fmt.Println("`git-savepoint` works from any terminal afterwards.")
+		fmt.Println()
+		if err := installToPath(); err != nil {
+			fmt.Fprintln(os.Stderr, "warning: auto-install failed:", err)
+			fmt.Fprintln(os.Stderr, "continuing to watch this folder anyway, nothing else is affected.")
+		}
+		fmt.Println()
+	}
 
 	repoRoot, err := gitutil.RepoRoot(cwd)
 	if err != nil {
@@ -124,6 +147,14 @@ func cmdQuickToggle() {
 func pauseForExit() {
 	fmt.Print("\nPress Enter to close this window...")
 	fmt.Scanln()
+}
+
+// checks if git-savepoint can already be found on PATH, works the same
+// on windows/mac/linux since it just asks the OS to resolve it like a
+// shell would
+func alreadyInstalled() bool {
+	_, err := exec.LookPath("git-savepoint")
+	return err == nil
 }
 
 func fatalIf(err error) {
@@ -332,4 +363,21 @@ func cmdRestore(repoRoot string, args []string) {
 	}
 	fmt.Printf("restored to checkpoint: %s - %s\n",
 		result.RestoredTo.Time().Format("15:04:05"), result.RestoredTo.Message)
+}
+
+// asks first since this touches the registry / shell config, then hands
+// off to the platform-specific removal
+func cmdUninstall() {
+	fmt.Println("this will remove git-savepoint from your PATH and delete the installed copy.")
+	fmt.Println("(any checkpoints already saved in your repos are not touched)")
+	fmt.Print("continue? [y/N] ")
+
+	var answer string
+	fmt.Scanln(&answer)
+	if strings.ToLower(strings.TrimSpace(answer)) != "y" {
+		fmt.Println("aborted")
+		return
+	}
+
+	fatalIf(uninstallFromPath())
 }
