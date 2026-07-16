@@ -9,7 +9,7 @@ saving your progress.
 
 ## Install (one time)
 (download latest version from releases)
-1. Double-click `git-savepoint-v1.0.1`
+1. Double-click `git-savepoint.exe`
 2. Open a new terminal and run:
    ```
    git-savepoint install
@@ -79,4 +79,4 @@ git-savepoint uninstall
 Follow the instructions after running that command. git-savepoint should already be uninstalled from PATH when run.
 
 **Updating:**
-Currently, the only way to update is by downloading the latest file from releases and running it. Everything should auto-update on its own. 
+Currently, the only way to update is by downloading the latest file from releases and running it. 
