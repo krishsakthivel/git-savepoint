@@ -1,0 +1,5 @@
+/bin/
+/git-savepoint
+*.test
+.DS_Store
+/git-savepoint.exe
