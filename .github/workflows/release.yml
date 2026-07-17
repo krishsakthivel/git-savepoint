@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}-${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+
+          - goos: linux
+            goarch: amd64
+            ext: ""
+
+          - goos: linux
+            goarch: arm64
+            ext: ""
+
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p dist
+          go build -ldflags="-s -w" \
+          -o dist/git-savepoint-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} \
+          ./cmd/git-savepoint
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
+        with:
+          files: dist/*

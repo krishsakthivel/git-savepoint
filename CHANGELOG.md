@@ -1,3 +1,8 @@
+
+# v1.1.1
+- README updates
+- Automatic binary releases on commit (includes Linux distro)
+
 # v1.1.0
 
 - Added tests
