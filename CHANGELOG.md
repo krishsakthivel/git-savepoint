@@ -1,3 +1,7 @@
+# v1.2.2
+- Update timeout increased to ~5min
+- Fixed version being shown as dev.
+
 # v1.2.1
 - Easier installation instructions.
 
