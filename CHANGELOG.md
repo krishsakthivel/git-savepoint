@@ -1,5 +1,5 @@
 
-# v1.1.1
+# v1.1.1/2
 - README updates
 - Automatic binary releases on commit (includes Linux distro)
 
