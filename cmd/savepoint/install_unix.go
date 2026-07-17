@@ -39,17 +39,22 @@ func installToPath() error {
 		return nil
 	}
 
-	rc := shellRCFile(home)
-	line := `export PATH="$HOME/.local/bin:$PATH"`
+	rc, line := shellRCFile(home)
 	if rc == "" {
 		fmt.Println("couldn't figure out your shell config, add this line to it yourself:")
-		fmt.Println("  " + line)
+		fmt.Println(`  export PATH="$HOME/.local/bin:$PATH"`)
 		return nil
 	}
 
 	already, _ := fileContains(rc, line)
 	if already {
 		fmt.Println("PATH line already in", rc+", just open a new terminal")
+		return nil
+	}
+
+	if err := os.MkdirAll(filepath.Dir(rc), 0755); err != nil {
+		fmt.Println("couldn't create config dir for", rc+", add this line yourself:")
+		fmt.Println("  " + line)
 		return nil
 	}
 
@@ -75,9 +80,9 @@ func uninstallFromPath() error {
 	installDir := filepath.Join(home, ".local", "bin")
 	target := filepath.Join(installDir, "git-savepoint")
 
-	rc := shellRCFile(home)
+	rc, line := shellRCFile(home)
 	if rc != "" {
-		if err := removeInstallLines(rc); err != nil {
+		if err := removeInstallLines(rc, line); err != nil {
 			fmt.Printf("couldn't clean up %s automatically: %v\n", rc, err)
 			fmt.Println("you can remove the '# added by git-savepoint' block from it yourself")
 		} else {
@@ -99,9 +104,7 @@ func uninstallFromPath() error {
 	return nil
 }
 
-// strips the "# added by git-savepoint" comment and the PATH export
-// line right after it, leaving everything else in the rc file alone
-func removeInstallLines(rc string) error {
+func removeInstallLines(rc string, line string) error {
 	data, err := os.ReadFile(rc)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -114,8 +117,7 @@ func removeInstallLines(rc string) error {
 	var kept []string
 	for i := 0; i < len(lines); i++ {
 		if strings.Contains(lines[i], "# added by git-savepoint") {
-			// also skip the export line right after it, if that's what's there
-			if i+1 < len(lines) && strings.Contains(lines[i+1], `export PATH="$HOME/.local/bin:$PATH"`) {
+			if i+1 < len(lines) && strings.Contains(lines[i+1], line) {
 				i++
 			}
 			continue
@@ -134,18 +136,24 @@ func onPath(dir string) bool {
 	return false
 }
 
-func shellRCFile(home string) string {
+func shellRCFile(home string) (rc string, line string) {
 	shell := os.Getenv("SHELL")
 	switch {
+	case strings.Contains(shell, "fish"):
+		return filepath.Join(home, ".config", "fish", "config.fish"),
+			`fish_add_path $HOME/.local/bin`
 	case strings.Contains(shell, "zsh"):
-		return filepath.Join(home, ".zshrc")
+		return filepath.Join(home, ".zshrc"),
+			`export PATH="$HOME/.local/bin:$PATH"`
 	case strings.Contains(shell, "bash"):
 		if _, err := os.Stat(filepath.Join(home, ".bash_profile")); err == nil {
-			return filepath.Join(home, ".bash_profile")
+			return filepath.Join(home, ".bash_profile"),
+				`export PATH="$HOME/.local/bin:$PATH"`
 		}
-		return filepath.Join(home, ".bashrc")
+		return filepath.Join(home, ".bashrc"),
+			`export PATH="$HOME/.local/bin:$PATH"`
 	default:
-		return ""
+		return "", ""
 	}
 }
 

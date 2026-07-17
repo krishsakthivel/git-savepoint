@@ -7,6 +7,15 @@ do. If you ever break something, jump back to any earlier point in seconds.
 It doesn't touch your normal commits or `git log`. It just sits underneath,
 saving your progress.
 
+## Is this safe to run?
+
+Yes. git-savepoint stores snapshots using Git's own internal object
+database (the same content-addressed storage Git already uses for your
+commits). It does not create commits on your current branch, does not
+modify `git log` or your branch history, and never pushes anything to
+your remote.
+- I'm not trying to pay for the license that Windows Defender asks for, so it'll keep showing our file as unsafe. I might make some CLI command that y'all can copy paste so you don't have to keep going through the thing.
+
 ## Install (one time)
 (download latest version from releases)
 1. Double-click `git-savepoint.exe`
@@ -79,4 +88,4 @@ git-savepoint uninstall
 Follow the instructions after running that command. git-savepoint should already be uninstalled from PATH when run.
 
 **Updating:**
-Currently, the only way to update is by downloading the latest file from releases and running it. 
+Currently, the only way to update is by downloading the latest file from releases and running it.

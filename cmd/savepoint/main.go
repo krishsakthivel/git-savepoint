@@ -16,6 +16,8 @@ import (
 	"git-savepoint/internal/watcher"
 )
 
+var version = "dev"
+
 func main() {
 	if len(os.Args) < 2 {
 		cmdQuickToggle()
@@ -28,6 +30,12 @@ func main() {
 		return
 	case "uninstall":
 		cmdUninstall()
+		return
+	case "version", "-v", "--version":
+		fmt.Println("git-savepoint", version)
+		return
+	case "update":
+		cmdUpdate(os.Args[2:])
 		return
 	case "-h", "--help", "help":
 		usage()
@@ -68,6 +76,8 @@ Usage:
   git-savepoint timeline           list checkpoints, newest last
   git-savepoint restore <id>       restore the working tree to a checkpoint (id, timestamp, or "latest")
   git-savepoint stop               stop the background watcher
+  git-savepoint version             print the installed version
+  git-savepoint update [--check]    download and install the latest release
 
 Running git-savepoint with no arguments (e.g. double-clicking the .exe)
 starts watching the current folder, and running it again stops it.
