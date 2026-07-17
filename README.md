@@ -7,26 +7,46 @@ do. If you ever break something, jump back to any earlier point in seconds.
 It doesn't touch your normal commits or `git log`. It just sits underneath,
 saving your progress.
 
-## Is this safe to run?
+## Is this safe to run on my repo?
 
 Yes. git-savepoint stores snapshots using Git's own internal object
 database (the same content-addressed storage Git already uses for your
 commits). It does not create commits on your current branch, does not
 modify `git log` or your branch history, and never pushes anything to
-your remote.
-- I'm not trying to pay for the license that Windows Defender asks for, so it'll keep showing our file as unsafe. I might make some CLI command that y'all can copy paste so you don't have to keep going through the thing.
+your remote. Snapshots live under refs that are separate from your
+branches, so they stay completely out of your way until you ask for
+them.
 
 ## Install (one time)
-(download latest version from releases)
-1. Double-click `git-savepoint.exe`
+
+**macOS / Linux:**
+```
+curl -fsSL https://raw.githubusercontent.com/krishsakthivel/git-savepoint/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```
+irm https://raw.githubusercontent.com/krishsakthivel/git-savepoint/main/install.ps1 | iex
+```
+
+Either one downloads the right build for your machine, puts it on your
+PATH, and gets `git-savepoint` working from any terminal. Works with
+bash, zsh, and fish.
+
+Close and reopen your terminal afterward, then run `git-savepoint` from
+anywhere.
+
+**Don't want to run a script?** Grab the binary for your OS straight from
+[the latest release](https://github.com/krishsakthivel/git-savepoint/releases/latest),
+then:
+1. On Windows, double-click the `.exe` once
 2. Open a new terminal and run:
    ```
    git-savepoint install
    ```
-
 3. Close and reopen your terminal
 
-Done. 
+Done.
 
 ## Use it
 
@@ -43,6 +63,7 @@ often, or whenever you pause.
 ```
 git-savepoint status      # is it running? how many saves so far?
 git-savepoint timeline    # see every save point
+git-savepoint version     # what version am I running?
 ```
 
 **Undo / roll back:**
@@ -88,4 +109,12 @@ git-savepoint uninstall
 Follow the instructions after running that command. git-savepoint should already be uninstalled from PATH when run.
 
 **Updating:**
-Currently, the only way to update is by downloading the latest file from releases and running it.
+```
+git-savepoint update
+```
+Checks for a newer release and, if there is one, downloads and installs
+it in place. Add `--check` to just see if an update is available without
+installing it:
+```
+git-savepoint update --check
+```

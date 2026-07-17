@@ -1,3 +1,9 @@
+# v1.2.1
+- Easier installation instructions.
+
+# v1.2.0
+- Added version command
+- Added update command
 
 # v1.1.1/2
 - README updates
