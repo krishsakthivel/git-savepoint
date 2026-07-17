@@ -52,7 +52,7 @@ jobs:
           mkdir -p dist
           go build -ldflags="-s -w" \
           -o dist/git-savepoint-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} \
-          ./cmd/git-savepoint
+          ./cmd/savepoint
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
