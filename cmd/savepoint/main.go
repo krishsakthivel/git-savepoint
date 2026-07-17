@@ -1,12 +1,3 @@
-// the git-savepoint cli
-//
-//	git-savepoint start [--daemon]
-//	git-savepoint status
-//	git-savepoint timeline
-//	git-savepoint restore <checkpoint-id>
-//	git-savepoint stop
-//
-// hopefully these should be the commands
 package main
 
 import (
@@ -31,8 +22,6 @@ func main() {
 		return
 	}
 
-	// install and help dont need to be run inside a repo, so handle
-	// those before we go looking for one
 	switch os.Args[1] {
 	case "install":
 		fatalIf(installToPath())
@@ -82,8 +71,6 @@ Usage:
 
 Running git-savepoint with no arguments (e.g. double-clicking the .exe)
 starts watching the current folder, and running it again stops it.
-
-⭐ if this helps you, feel free to star our repo at https://github.com/krishsakthivel/git-savepoint/ ⭐
 `)
 }
 
@@ -123,6 +110,11 @@ func cmdQuickToggle() {
 		return
 	}
 
+	if !checkRepoSupported(repoRoot) {
+		pauseForExit()
+		return
+	}
+
 	fmt.Println("git-savepoint watching", repoRoot)
 	fmt.Println("Leave this window open while you work.")
 	fmt.Println("Run git-savepoint again (double-click it) to stop, or press Ctrl+C.")
@@ -136,7 +128,6 @@ func cmdQuickToggle() {
 	pauseForExit()
 }
 
-// keeps the window open after double click so it doesnt just flash and close
 func pauseForExit() {
 	fmt.Print("\nPress Enter to close this window...")
 	fmt.Scanln()
@@ -147,14 +138,28 @@ func alreadyInstalled() bool {
 	return err == nil
 }
 
+func checkRepoSupported(repoRoot string) bool {
+	issues, err := gitutil.UnsupportedFeatures(repoRoot)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error checking repo state:", err)
+		return false
+	}
+	if len(issues) == 0 {
+		return true
+	}
+	for _, issue := range issues {
+		fmt.Printf("git-savepoint: this repo has %s, which is currently unsupported.\n", issue)
+	}
+	fmt.Println("not starting, to avoid doing something unpredictable to this repo.")
+	return false
+}
+
 func fatalIf(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 }
-
-// stop/start a pid file under git
 
 func pidFile(repoRoot string) string {
 	gitDir, err := gitutil.GitDir(repoRoot)
@@ -187,6 +192,10 @@ func cmdStart(repoRoot string, args []string) {
 	if pid, running := runningPID(repoRoot); running {
 		fmt.Printf("git-savepoint is already watching this repo (pid %d)\n", pid)
 		return
+	}
+
+	if !childProcess && !checkRepoSupported(repoRoot) {
+		os.Exit(1)
 	}
 
 	if daemon {
@@ -279,8 +288,6 @@ func runWatchLoop(repoRoot string) {
 	w.Run(stop)
 }
 
-//status/timeline
-
 func cmdStatus(repoRoot string) {
 	if pid, running := runningPID(repoRoot); running {
 		fmt.Printf("watching:      yes (pid %d)\n", pid)
@@ -318,8 +325,6 @@ func cmdTimeline(repoRoot string) {
 	}
 	fmt.Println()
 }
-
-// restore
 
 func cmdRestore(repoRoot string, args []string) {
 	if len(args) < 1 {

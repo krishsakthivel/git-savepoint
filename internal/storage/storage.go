@@ -1,4 +1,3 @@
-
 package storage
 
 import (
@@ -13,24 +12,32 @@ import (
 
 const RefPrefix = "refs/git-savepoint/checkpoints/"
 
-
 type Checkpoint struct {
-	Timestamp int64  // unix seconds, also the ref name
-	Commit    string // commit-tree hash this ref points to
-	Message   string // short human-readable label
+	Timestamp int64
+	Commit    string
+	Message   string
 }
 
 func (c Checkpoint) Time() time.Time {
-	return time.Unix(c.Timestamp, 0)
+	return time.Unix(0, c.Timestamp)
 }
 
 func (c Checkpoint) RefName() string {
 	return RefPrefix + strconv.FormatInt(c.Timestamp, 10)
 }
 
-
 func Save(repoRoot string, commitHash string, message string) (Checkpoint, error) {
-	ts := time.Now().Unix()
+	ts := time.Now().UnixNano()
+
+	for {
+		exists, err := gitutil.Run(repoRoot, "show-ref", "--verify", "--quiet", RefPrefix+strconv.FormatInt(ts, 10))
+		_ = exists
+		if err != nil {
+			break
+		}
+		ts++
+	}
+
 	cp := Checkpoint{Timestamp: ts, Commit: commitHash, Message: message}
 	_, err := gitutil.Run(repoRoot, "update-ref", cp.RefName(), commitHash)
 	if err != nil {
@@ -38,7 +45,6 @@ func Save(repoRoot string, commitHash string, message string) (Checkpoint, error
 	}
 	return cp, nil
 }
-
 
 func List(repoRoot string) ([]Checkpoint, error) {
 	out, err := gitutil.Run(repoRoot, "for-each-ref",
@@ -77,7 +83,6 @@ func List(repoRoot string) ([]Checkpoint, error) {
 	return checkpoints, nil
 }
 
-// Latest returns the most recent checkpoint, or false if none exist.
 func Latest(repoRoot string) (Checkpoint, bool, error) {
 	all, err := List(repoRoot)
 	if err != nil {
@@ -88,7 +93,6 @@ func Latest(repoRoot string) (Checkpoint, bool, error) {
 	}
 	return all[len(all)-1], true, nil
 }
-
 
 func Find(repoRoot string, id string) (Checkpoint, error) {
 	all, err := List(repoRoot)
