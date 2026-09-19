@@ -1,5 +1,5 @@
 # git-savepoint
-
+## looking back at this, this was a really trash project and dont recommend anyone use it. lol
 Auto-save your code. It watches a Git repo in the background and quietly
 saves snapshots as you work, no commits to look at, nothing to remember to
 do. If you ever break something, jump back to any earlier point in seconds.
